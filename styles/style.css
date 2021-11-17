@@ -1,0 +1,73 @@
+#banner {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+#banner h3 {
+    margin-top: -10px;
+}
+
+#game-board {
+    display: flex;
+    justify-content: center;
+    margin-top: 40px;
+    /* flex: 1 0 auto; */
+}
+
+#map {
+    height: 550px;
+    width: 850px;
+    position: absolute;
+    background-image: url("/img/3d-office-floorplan-3.jpg");
+    background-repeat: no-repeat;
+    z-index: 1;
+}
+
+#info-box {
+    float: right;
+    border: 5px solid black;
+    border-radius: 5px;
+    padding: 30px;
+    margin-right: 30px;
+}
+
+/* #score-board {
+    float: right;
+    margin-left: -10px;
+    margin-right: 80px;
+} */
+
+/* #action-box {
+    float: right;
+    margin-left: 500px;
+    margin-top: 200px;
+} */
+
+.terr {
+    border: 5px solid white;
+    border-radius: 5px;
+    padding: 5px;
+    color: black;
+    font-size: 25px;
+    z-index: 10;
+}
+
+.terr img {
+    height: 25px;
+    width: 25px;
+}
+
+#c1 {
+    margin-left: -660px;
+    margin-top: 25px;
+}
+
+#c2 {
+    margin-left: 30px;
+    margin-top: 25px;
+}
+
+footer {
+    /* flex-shrink: 0; */
+}

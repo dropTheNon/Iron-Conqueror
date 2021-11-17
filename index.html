@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Iron Conqueror</title>
+    <link rel="stylesheet" href="./styles/style.css"/>
+  </head>
+  <body>
+    <div id="banner">
+      <h1>Iron Conqueror</h1>
+      <h3>Conquer all of your opponent's territories to become the Iron Conqueror!</h3>
+    </div>
+    
+    <div id="game-board">
+      <div id="map"></div>
+      <div id="c1" class="terr"><img src="/img/soldier.png"/>3</div>
+      <div id="c2" class="terr"><img src="/img/soldier.png"/>3</div>
+    </div>
+    <div id="info-box" class="container">
+      <div class="column">
+        <div id="score-board" class="row">
+          <h3>Number of Territories</h3>
+          <p>Player One: <span id="player-one-territories">0</span></p>
+          <p>Player Two: <span id="player-two-territories">0</span></p>
+        </div>
+        <div id="action-box" class="row">
+          <h3><span id="players-turn">Player One's Turn</span></h3>
+          <button class="btn btn-success">Begin Turn</button>
+        </div>
+      </div>
+    </div>
+
+    <script type="text/javascript" src="js/data.js"></script>
+    <script type="text/javascript" src="js/helpers.js"></script>
+    <script type="text/javascript" src="js/index.js"></script>
+    <!-- <footer><div>Icons made by <a href="https://www.flaticon.com/authors/hight-quality-icons" title="Hight Quality Icons">Hight Quality Icons</a> from <a href="https://www.flaticon.com/" title="Flaticon">www.flaticon.com</a></div></footer> -->
+  </body>
+  
+</html>
