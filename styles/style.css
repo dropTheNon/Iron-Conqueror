@@ -19,7 +19,7 @@
     height: 550px;
     width: 850px;
     position: absolute;
-    background-image: url("/img/3d-office-floorplan-3.jpg");
+    background-image: url("img/3d-office-floorplan-3.jpg");
     background-repeat: no-repeat;
     z-index: 1;
 }
