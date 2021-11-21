@@ -7,22 +7,182 @@ function isEmpty(obj) {
     return Object.keys(obj).length === 0;
 };
 
+// Function to return random index of array
+function randomizer(array) {
+    return Math.floor(Math.random() * array.length)
+};
+
+// Function to clear select options
+function clearOptions(parentNode) {
+    while (parentNode.firstChild) {
+        parentNode.removeChild(parentNode.firstChild);
+    }
+};
+
+// Function to find a certain key within our playersObj
+function findKeyWithinPlayersObj(playersObj, keyToFind, callbackFn) {
+    Object.keys(playersObj).forEach(player => {
+        // Set currentPlayer to the player being iterated over right now
+        let currentPlayer = playersObj[player];
+        // Loop over each key in the currentPlayer
+        Object.keys(currentPlayer).forEach(key => {
+            // If the key is "territories",
+            if (key === keyToFind) {
+                // run a for loop over that territories array and...
+                return callbackFn(playersObj, keyToFind);
+            };
+        });
+    });
+};
+
+// Function to create select options for available colors at game start
+function availableColors() {
+    let colorSelect = document.getElementById("new-player-color");
+    clearOptions(colorSelect);
+    playerColors.forEach(color => {
+        let colorValue = color.toLowerCase();
+        let option = document.createElement("option");
+        option.text = color;
+        option.value = colorValue;
+        colorSelect.add(option);
+    });
+};
+
+// Function to change turn by changing data in our Game obj:
+// changing the turnIndex
+function changeTurn() {
+    gameObj["turnIndex"] += 1;
+    gameObj["numberOfTurns"] += 1;
+    beginTurn();
+}
+
+// Function to update territories' info
+function mapUpdate() {
+    // Loop over each territory
+    territories.forEach(terr => {
+        // grab territory name and color from territories Obj
+        let color = terr.color;
+        let name = terr.name;
+        let army = terr.army;
+        // grab territory using DOM manipulation
+        let territory = document.getElementById(name);
+        let territorySpan = territory.getElementsByClassName("terr-span")[0];
+        // change territory's color and border color to owner's color
+        territory.style.color = color;
+        territory.style.borderColor = color;
+        territorySpan.innerHTML = army;
+    });
+};
+
+// Function to update territories' owner in global territories object
+function terrUpdate() {
+    // Loop over each player in our Players object
+    Object.keys(playersObj).forEach(player => {
+        // Set currentPlayer to the player being iterated over right now
+        let currentPlayer = playersObj[player];
+        // Loop over each key in the currentPlayer
+        Object.keys(currentPlayer).forEach(key => {
+            // If the key is "territories",
+            if (key == "territories") {
+                // run a for loop over that territories array and...
+                for (let i = 0; i < currentPlayer[key].length; i++) {
+                    // run a for loop over our global territories array and...
+                    for (let j = 0; j < territories.length; j++) {
+                        // check to see if the territory is in the players array and...
+                        if (territories[j].name == currentPlayer[key][i]) {
+                            // change that territory's owner & color in territories array to the currentPlayer
+                            territories[j].owner = currentPlayer.name;
+                            territories[j].color = currentPlayer.color;
+                        }
+                    }
+                }
+            }
+        });
+    });
+
+    // Call our function to update territories' colors
+    return mapUpdate();
+}
+
 // Function to randomly distribute territories to players in playersObj,
 // receiving the playersObj as a parameter
-function mapDrop(playersObj) {
-    // Initialize playerArray to push player's names into
-    let playerArray = [];
-    // Initialize a copy of our territories array to splice 
+function mapDrop() {
+    // Find how many players we have
+    let numberOfPlayers = gameObj["numberOfPlayers"];
+    // Initialize a copy of our territories array to splice from
     let tempTerritories = [...territories];
-    Object.keys(playersObj).forEach(key => {
-        if (key === "name") {
-            playerArray.push(playersObj[key]);
-        }
+    // Set how many territories each player will have, leaving an equal unclaimed amount of territories
+    let territoriesEach = Math.floor(tempTerritories.length / (numberOfPlayers + 1));
+
+    // Loop over each player in our playerObj
+    Object.keys(playersObj).forEach(player => {
+        // set currentPlayer equal to this player
+        let currentPlayer = playersObj[player];
+        // loop over currentPlayer's keys
+        Object.keys(currentPlayer).forEach(key => {
+            // Find the territories key
+            if (key == "territories") {
+                // set a counter for our while loop, to give the required number of territories
+                let counter = territoriesEach;
+
+                while (counter > 0) {
+                    // obtain random index of our tempTerritories array
+                    let rdm = randomizer(tempTerritories);
+                    // push that territory name into our player's territories array
+                    currentPlayer[key].push(tempTerritories[rdm].name)
+                    // remove that territory from our available pool
+                    tempTerritories.splice(rdm, 1);
+                    // decrement our counter to advance through while loop
+                    counter -= 1;
+                };
+            };
+        });
     });
-    
+    // return from this function by calling our terrUpdate function
+    terrUpdate();
 }
 
 // ***********   Deploy helper functions   ***********
+
+// Function to create select options for territories to deploy onto
+function availableTerritories() {
+    // Find our players territories as an array
+    let territoriesToDeployOnto = playersObj[gameObj["playersTurn"]].territories.sort();
+
+    // Grab our select id for deploying to territories dropdown
+    let deployToTerritorySelect = document.getElementById("deploy-to-territory");
+    clearOptions(deployToTerritorySelect);
+    territoriesToDeployOnto.forEach(terr => {
+        let option = document.createElement("option");
+        option.text = terr;
+        option.value = terr;
+        deployToTerritorySelect.add(option);
+    });
+};
+
+// Function to create select options for troop deployment
+function availableTroops() {
+    
+    // Find out number of troops to deploy using our playersObj and gameObj data
+    let troops = playersObj[gameObj["playersTurn"]].troopsToDeploy;
+
+    // If we're done deploying (no more troops to deploy), call beginAttack() function
+    if (troops === 0) {
+        return;
+    };
+
+    // Using DOM manipulation to create options for our troop deployment select box
+    let deployHowManyFormSelect = document.getElementById("deploy-how-many");
+    clearOptions(deployHowManyFormSelect);
+    let i = 1;
+    while (i <= troops) {
+        let option = document.createElement("option");
+        option.text = i;
+        option.value = i;
+        deployHowManyFormSelect.add(option);
+        i++;
+    };
+};
 
 // Function to determine if player gets bonus troops to deploy, where param "ter" is players territory array
 function bonusCheck(ter) {
@@ -43,7 +203,10 @@ function bonusCheck(ter) {
 }
 
 // Function to determine how many troops to deploy this turn
-function deployHowMany(player) {
+function deployHowMany() {
+
+    // Find this.player
+    let player = playersObj[gameObj["playersTurn"]];
     // Troops to deploy, initialized as zero
     let troops = 0;
 
@@ -58,7 +221,11 @@ function deployHowMany(player) {
     let bonus = bonusCheck(player.territories);
 
     troops += bonus;
-    return troops;
+
+    // Set players troopsToDeploy number
+    player.troopsToDeploy = troops;
+
+    return player.beginDeploy();
 }
 
 // ***********   Attack helper functions   ***********
@@ -143,22 +310,27 @@ function findTerrCanAttack(attackObj) {
     // Sort array so it's more visually appealing 
     terrCanAttack.sort();
     attackObj["terrCanAttack"] = terrCanAttack;
-    console.log(attackObj);
     return attackableTerritoriesCheck(attackObj);
 }
 
 // Function to begin attacking phase & change Action Box, where param is playersObj.[name-of-player]
-function beginAttack(player) {
+function beginAttack() {
+    let player = playersObj[gameObj["playersTurn"]];
     let attackObj = {
         "name" : player.name   
     }
-    // Call first helper function using our attackObj
+    // Call first in chain of helper functions using our attackObj
     findTerrCanAttack(attackObj);
-
-    console.log("final attackObj", attackObj);
 
     /* DOM manipulation to change Action Box to attacking phase, 
     with drop down selection of territories from terrCanAttack */
+
+    // DOM manipulation to hide deployTroops form
+    let deployForm = document.getElementById("deploy-form");
+    deployForm.style.display = "none";
+
+    let attackForm = document.getElementById("attack-form");
+    attackForm.style.display = "flex";
 
     // Once player selects a territory to attack from
     // let attacker = // players input selection for territory to attack from
@@ -167,6 +339,7 @@ function beginAttack(player) {
     // So that we can find the corresponding array by index in our array of attackables
     // let attackables = allAttackableTerrs[attackerIndex];
     // 
+    return true;
 }
 
 // Function to determine # of dice for attacker and defender & obtain their dice
@@ -219,5 +392,28 @@ function arrayRemove(arr, value) {
         return elem != value;
     });
 }
+
+// Function to check for victory
+function winCheck(playersObj) {
+    Object.keys(playersObj).forEach(player => {
+        // Set currentPlayer to the player being iterated over right now
+        let currentPlayer = playersObj[player];
+        // Loop over each key in the currentPlayer
+        Object.keys(currentPlayer).forEach(key => {
+            // If the key is "territories",
+            if (key == "territories") {
+                // run a for loop over that territories array and...
+                if (currentPlayer[key].length === 0) {
+                    return victory(playersObj);
+                }
+            }
+        })
+    })
+}
+
+// Function to end game and show/celebrate winner
+function victory(playersObj) {
+
+};
 
 // ***********   Fortify helper functions   ***********

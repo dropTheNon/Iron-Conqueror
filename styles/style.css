@@ -1,3 +1,30 @@
+.center-content {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.center-content-column {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+}
+
+.game-body-container {
+    width: 90vw;
+    justify-content: space-between;
+}
+
+.btn {
+    width: 80%;
+}
+
+.btn-success {
+    background-color: rgb(20, 207, 20);
+    color: black;
+}
+
 #banner {
     display: flex;
     flex-direction: column;
@@ -9,27 +36,56 @@
 }
 
 #game-board {
+    position: relative;
+    height: 518px;
+    width: 800px;
     display: flex;
-    justify-content: center;
+    align-items: center;
     margin-top: 40px;
+    border: 5px solid black;
+    border-radius: 5px;
+    
     /* flex: 1 0 auto; */
 }
 
 #map {
-    height: 550px;
-    width: 850px;
-    position: absolute;
+    height: 518px;
+    width: 800px;
+    position: block;
     background-image: url("../img/3d-office-floorplan-3.jpg");
     background-repeat: no-repeat;
+    
     z-index: 1;
 }
 
 #info-box {
-    float: right;
+    display: block;
     border: 5px solid black;
     border-radius: 5px;
     padding: 30px;
-    margin-right: 30px;
+    width: 27%;
+}
+
+/* ***************  Forms by ID *************** */
+#create-player-form {
+    display: none;
+}
+
+#deploy-form {
+    display: none;
+}
+
+#attack-form {
+    display: none;
+}
+
+/* ***************  Buttons by ID  *************** */
+#start-game-btn {
+    display: none;
+}
+
+#begin-turn-btn {
+    display: none;
 }
 
 /* #score-board {
@@ -45,28 +101,205 @@
 } */
 
 .terr {
+    height: 40px;
+    width: 35px;
     border: 5px solid white;
     border-radius: 5px;
-    padding: 5px;
+    background-color: rgba(210, 199, 205, 0.4);
+    padding: 2px;
     color: black;
-    font-size: 25px;
+    font-size: 20px;
     z-index: 10;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: space-evenly;
 }
 
 .terr img {
-    height: 25px;
-    width: 25px;
+    height: 20px;
+    width: 20px;
+}
+
+.terr span {
+    justify-content: center;
+    font-size: 20px;
 }
 
 #c1 {
-    margin-left: -660px;
-    margin-top: 25px;
+    position: absolute;
+    left: 28px;
+    top: 32px;
 }
 
 #c2 {
-    margin-left: 30px;
-    margin-top: 25px;
+    position: absolute;
+    left: 100px;
+    top: 32px;
 }
+
+#c3 {
+    position: absolute;
+    left: 28px;
+    top: 105px;
+}
+
+#c4 {
+    position: absolute;
+    left: 165px;
+    top: 90px;
+}
+
+#s1 {
+    position: absolute;
+    left: 255px;
+    top: 35px;
+}
+
+#s2 {
+    position: absolute;
+    left: 348px;
+    top: 35px;
+}
+
+#s3 {
+    position: absolute;
+    left: 302px;
+    top: 115px;
+}
+
+#j1 {
+    position: absolute;
+    left: 435px;
+    top: 40px;
+}
+
+#j2 {
+    position: absolute;
+    left: 409px;
+    top: 107px;
+}
+
+#j3 {
+    position: absolute;
+    left: 460px;
+    top: 107px;
+}
+
+#j4 {
+    position: absolute;
+    left: 409px;
+    top: 162px;
+}
+
+#j5 {
+    position: absolute;
+    left: 460px;
+    top: 162px;
+}
+
+#ry1 {
+    position: absolute;
+    left: 545px;
+    top: 50px;
+}
+
+#ry2 {
+    position: absolute;
+    left: 567px;
+    top: 142px;
+}
+
+#g1 {
+    position: absolute;
+    left: 675px;
+    top: 50px;
+}
+
+#g2 {
+    position: absolute;
+    left: 700px;
+    top: 133px;
+}
+
+#a1 {
+    position: absolute;
+    left: 110px;
+    top: 220px;
+}
+
+#a2 {
+    position: absolute;
+    left: 230px;
+    top: 195px;
+}
+
+#a3 {
+    position: absolute;
+    left: 335px;
+    top: 180px;
+}
+
+#a4 {
+    position: absolute;
+    left: 302px;
+    top: 375px;
+}
+
+#w1 {
+    position: absolute;
+    left: 30px;
+    top: 340px;
+}
+
+#w2 {
+    position: absolute;
+    left: 52px;
+    top: 413px;
+}
+
+#d1 {
+    position: absolute;
+    left: 165px;
+    top: 340px;
+}
+
+#d2 {
+    position: absolute;
+    left: 163px;
+    top: 413px;
+}
+
+#m1 {
+    position: absolute;
+    left: 462px;
+    top: 321px;
+}
+
+#m2 {
+    position: absolute;
+    left: 545px;
+    top: 375px;
+}
+
+#m3 {
+    position: absolute;
+    left: 462px;
+    top: 422px;
+}
+
+#ru1 {
+    position: absolute;
+    left: 687px;
+    top: 332px;
+}
+
+#ru2 {
+    position: absolute;
+    left: 666px;
+    top: 419px;
+}
+
 
 footer {
     /* flex-shrink: 0; */
