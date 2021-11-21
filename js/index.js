@@ -5,6 +5,8 @@ const gameObj = {
     "status" : "active",
     "numberOfTurns": 1
 };
+// Object to store attack information in
+const attackObj = {};
 // Available colors
 let playerColors = ["Red", "Orange", "Yellow", "Green", "Blue", "Pink"];
 
@@ -39,6 +41,10 @@ class Player {
 
         // if this player is out of troops, call beginAttack() function
         if (this.troopsToDeploy === 0) {
+
+            let displayMessage = document.getElementById("display-message");
+            displayMessage.innerHTML = "Attack enemy territories";
+        
             return beginAttack();
         }
     }
@@ -60,34 +66,38 @@ class Player {
         return this.beginDeploy();
     }
 
-    // Attack method, where "att" is the attacking territory and "def" is the defending territory
-    attack(terrToAttackFrom, terrToBeAttacked) {
+    // Attack method, to attack a territory
+    attack() {
 
         let att, def;
 
-        territories.forEach(terr => {
-            if (terr.name === terrToAttackFrom) {
+        territories.forEach(function callback(terr, index) {
+            if (terr.name === attackObj["att"]) {
                 att = terr;
+                attackObj["terrIndexOfAttacker"] = index;
             };
-            if (terr.name === terrToBeAttacked) {
-                def = terr
+            if (terr.name === attackObj["def"]) {
+                def = terr;
+                attackObj["terrIndexOfDefender"] = index;
             }
         });
-
-        console.log("att", att);
-        console.log("def", def);
 
         // passing in our result object from our dice-roll function to get dice for att and def
         let result = diceRoll(att, def);
         
-        let attDice = result["attacker-dice"];
-        let defDice = result["defender-dice"];
+        // Variables for attacker dice, defender dice
+        let attDice = attackObj["dice-roll-result"]["attacker-dice"];
+        let defDice = attackObj["dice-roll-result"]["defender-dice"];
+
+        // variables for att.owner, def.owner
+        let attacker = att.owner;
+        let defender = def.owner;
 
         // Compare results
         while (defDice.length > 0) {
             /* If attacker's first dice is higher, and checking to
             see if territory has been conquered, to break loop */
-            if (att.owner !== def.owner && attDice[0] > defDice[0]) {
+            if (attacker !== defender && attDice[0] > defDice[0]) {
                 // defender loses 1 army
                 def.army -= 1;
                 // if defender has no army
@@ -98,16 +108,14 @@ class Player {
                     att.army -= 1;
                     def.army = 1;
                     // add territory to attacker's territories and remove from defender's
-                    att.territories.push(def.name);
-                    let defender = def.owner
-                    defender.territories = arrayRemove(defender.territories, def.name);
+                    playersObj[attacker].territories.push(def.name);
+                    playersObj[defender].territories = arrayRemove(playersObj[defender].territories, def.name);
                     // change owner of "def" to attacker, change color
                     def.owner = att.owner;
                     def.color = att.color;
 
-                    // Call method advanceTroops
-                    // this.advanceTroops(att, def);
-                    break;
+                    // Call method beginAdvanceTroops()
+                    return this.beginAdvanceTroops();
                 }
             }
             // If dice are tied, or defender dice is higher
@@ -124,17 +132,53 @@ class Player {
             // Reduce dice to proceed with while loop
             if (defDice.length > 0) {
                 // Remove highest (left-most) dice from each players' dice array
-                result["attacker-dice"].shift();
-                result["defender-dice"].shift();
+                attackObj["dice-roll-result"]["attacker-dice"].shift();
+                attackObj["dice-roll-result"]["defender-dice"].shift();
             }
         }
+
+        // Call function to update map visuals
+        mapUpdate();
         // Call winCheck function to see if victory has been achieved!
-        // winCheck(playersObj);
+        winCheck();
+        // If no victory yet, call beginAttack() again
+        beginAttack();
     }
 
-    /* Method to advance troops to a conquered territory, 
-    accepting same params as Attack, "att" and "def" */
-    advanceTroops(att, def) {
+    // Method to advance troops
+    advanceTroops(troopsToAdvance) {
+        // Change territories' troop numbers based off how many troops player advanced
+        territories[attackObj["terrIndexOfDefender"]].army += +(troopsToAdvance);
+        territories[attackObj["terrIndexOfAttacker"]].army -= +(troopsToAdvance);
+        mapUpdate();
+        beginAttack();
+    }
+
+    // Method to begin to advance troops to a conquered territory, where params are territory objects
+    // from our territories array
+    beginAdvanceTroops() {
+
+        // Map Update
+        mapUpdate();
+
+        // Change display message
+        let displayMessage = document.getElementById("display-message");
+        displayMessage.innerHTML = "Territory conquered! How many troops to advance?";
+
+        // Hide attack-form
+        let attackForm = document.getElementById("attack-form");
+        attackForm.style.display = "none";
+
+        // Show advance-form
+        let advanceTroopsForm = document.getElementById("advance-form");
+        advanceTroopsForm.style.display = "flex";
+
+        // Call helper function to populate drop down box for advancing
+        advanceHowMany();
+    }
+
+    // Method to fortify troops to adjacent territory
+    fortify() {
 
     }
 }
@@ -239,14 +283,36 @@ function beginNewGame() {
 
 // ***********   Event Listeners   ***********
 
+// Event listener for "Advance Troops" button
+document.getElementById("advance-form").addEventListener("submit", function(event) {
+    // Prevent form submission from refreshing page (and ruining game!)
+    event.preventDefault();
+
+    // Grab how many troops our player is advancing
+    let troopsToAdvance = document.getElementById("advance-how-many").value;
+
+    // Call our deploy(method) with these values as parameters
+    let player = playersObj[gameObj["playersTurn"]];
+    // pass this into our advance() method
+    player.advanceTroops(troopsToAdvance);
+});
+
+// Event listener for "End Attacks" button
+document.getElementById("end-attacks-btn").addEventListener("click", function() {
+
+    // Call beginFortify() helper function
+    beginFortify();
+});
+
 // Event listener for form submission for attacking territories
 document.getElementById("attack-form").addEventListener("submit", function(event) {
     // Prevent form submission from refreshing page (and ruining game!)
     event.preventDefault();
 
-    // Grab our information being submitted by the player
-    let terrToAttackFrom = document.getElementById("deploy-to-territory").value;
-    let terrToBeAttacked = document.getElementById("deploy-how-many").value;
+    // Grab our information being submitted by the player and add to attackObj
+    let terrToAttackFrom = attackObj["att"];
+    let terrToBeAttacked = document.getElementById("attack-these-territories").value;
+    attackObj["def"] = terrToBeAttacked;
 
     // Call our deploy(method) with these values as parameters
     let player = playersObj[gameObj["playersTurn"]];
