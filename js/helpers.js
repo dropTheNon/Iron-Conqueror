@@ -53,6 +53,7 @@ function availableColors() {
 function changeTurn() {
     gameObj["turnIndex"] += 1;
     gameObj["numberOfTurns"] += 1;
+
     beginTurn();
 }
 
@@ -72,6 +73,7 @@ function mapUpdate() {
         territory.style.borderColor = color;
         territorySpan.innerHTML = army;
     });
+    // console.log("territories in mapUpdate", territories);
 };
 
 // Function to update territories' owner in global territories object
@@ -110,7 +112,9 @@ function mapDrop() {
     // Find how many players we have
     let numberOfPlayers = gameObj["numberOfPlayers"];
     // Initialize a copy of our territories array to splice from
-    let tempTerritories = [...territories];
+    let tempTerritories = JSON.parse(JSON.stringify(territories));
+    // console.log("tempTerritories at start of mapDrop", tempTerritories);
+    // console.log("territories at start of mapDrop", territories);
     // Set how many territories each player will have, leaving an equal unclaimed amount of territories
     let territoriesEach = Math.floor(tempTerritories.length / (numberOfPlayers + 1));
 
@@ -138,6 +142,8 @@ function mapDrop() {
             };
         });
     });
+    // console.log("tempTerritories after mapDrop", tempTerritories);
+    // console.log("territories after mapDrop", territories);
     // return from this function by calling our terrUpdate function
     terrUpdate();
 }
@@ -224,7 +230,6 @@ function deployHowMany() {
 
     // Set players troopsToDeploy number
     player.troopsToDeploy = troops;
-
     return player.beginDeploy();
 }
 
@@ -262,6 +267,10 @@ function fillAttackableTerritories() {
     // Grab our select id for deploying to territories dropdown
     let attackTheseTerritoriesSelect = document.getElementById("attack-these-territories");
     clearOptions(attackTheseTerritoriesSelect);
+    let blankOption = document.createElement("option");
+    blankOption.text = "--";
+    blankOption.value = "--";
+    attackTheseTerritoriesSelect.add(blankOption);
     // loop over this array of territories and for each,
     territoriesCanBeAttacked.forEach(terr => {
         let option = document.createElement("option");
@@ -281,6 +290,10 @@ function fillAttackTerritories() {
     let attackFromTerritorySelect = document.getElementById("attack-from-territory");
     // Clear out any old selectors, just in case
     clearOptions(attackFromTerritorySelect);
+    let blankOption = document.createElement("option");
+    blankOption.text = "--";
+    blankOption.value = "--";
+    attackFromTerritorySelect.add(blankOption);
     // loop over each territory to list option, and put index as value to help with next function
     territoriesToAttackFrom.forEach(function callback(terr, index) {
         // create new option
@@ -317,16 +330,17 @@ function filterOutAlreadyOwned() {
     // For loop to get into each sub-array
     let allAttackableTerrs = attackObj["attackableTerrs"];
     let playerName = attackObj["attackerName"];
+    let tempTerritories = JSON.parse(JSON.stringify(territories));
     for (let i = 0; i < allAttackableTerrs.length; i++) {
         // For loop to go over each item within each sub-array
         for (let j = 0; j < allAttackableTerrs[i].length; j++) {
             // temp variable to store the name of each terr. in each sub-array
             let terrName = allAttackableTerrs[i][j];
             // For loop to go over global territories array of objects
-            for (let k = 0; k < territories.length; k++) {
+            for (let k = 0; k < tempTerritories.length; k++) {
                 // if the name of the territory is the same as this attackable territory
                 // and the owner of this territory matches the player name, then...
-                if (territories[k].name === terrName && territories[k].owner === playerName) {
+                if (tempTerritories[k].name === terrName && tempTerritories[k].owner === playerName) {
                     // remove this territory from the array
                     allAttackableTerrs[i].splice(j, 1);
                     // decrement j since we removed an item, 
@@ -341,13 +355,15 @@ function filterOutAlreadyOwned() {
     return filterOutAttacking();
 }
 
-// Function to list array of arrays, where the secondary arrays are the territoriesthat are able to be attacked
+// Function to list array of arrays, where the secondary arrays are the territories that are able to be attacked
 function attackableTerritoriesCheck() {
     let attackableTerrs = [];
+    let tempTerritories = JSON.parse(JSON.stringify(territories));
     attackObj["terrCanAttack"].forEach((attackingTerr) => {
-        territories.filter((territory) => {
+        tempTerritories.filter((territory) => {
             if (attackingTerr.name === territory.name) {
-                attackableTerrs.push(territory.neighbors);
+                let tempTerr = territory;
+                attackableTerrs.push(tempTerr.neighbors);
             };
         });
     });
@@ -361,11 +377,13 @@ function findTerrCanAttack() {
     // Initialize empty array to hold this players territories that have more than 1 army (and so can attack)
     let terrCanAttack = [];
     
+    let tempTerritories = JSON.parse(JSON.stringify(territories));
     // Loop over all territories - if this player is owner and it has army greater than 1,
-    territories.forEach((terr) => {
+    tempTerritories.forEach((terr) => {
         if (terr.owner === attackObj["attackerName"] && terr.army > 1) {
+            let tempTerr = terr;
             // push this into our attack-able array
-            terrCanAttack.push(terr)
+            terrCanAttack.push(tempTerr);
         }
     });
     // Sort array so it's more visually appealing 
@@ -379,9 +397,6 @@ function findTerrCanAttack() {
 // Function to begin attacking phase & change Action Box, where param is playersObj.[name-of-player]
 function beginAttack() {
 
-    // Change displayMessage back (for after advancing)
-    let displayMessage = document.getElementById("display-message");
-    displayMessage.innerHTML = "Attack enemy territories";
     // Clear advance form, if it exists
     let advanceTroopsForm = document.getElementById("advance-form");
     advanceTroopsForm.style.display = "none";
@@ -400,15 +415,24 @@ function beginAttack() {
     let deployForm = document.getElementById("deploy-form");
     deployForm.style.display = "none";
 
+    // and show attack-form
     let attackForm = document.getElementById("attack-form");
     attackForm.style.display = "flex";
+
+    // and show end-attack-bt
+    let endAttackButton = document.getElementById("end-attack-btn");
+    endAttackButton.style.display = "flex";
 
     // Call helper function to create options of territories to attack from
     fillAttackTerritories();
 }
 
 // Function to determine # of dice for attacker and defender & obtain their dice
-function diceRoll(att, def) {
+function diceRoll() {
+
+    // setting att and def variables to the attacking and defending territories from territory array
+    let att = territories[attackObj["terrIndexOfAttacker"]];
+    let def = territories[attackObj["terrIndexOfDefender"]];
 
     // Number of dice each player will get
     let numAttDice, numDefDice;
@@ -481,12 +505,138 @@ function winCheck() {
 
 // Function to end game and show/celebrate winner
 function victory() {
-    alert (`${gameObj["playersTurn"]} has acheived victory!  All hail the Conqueror!`);
+    alert (`${gameObj["playersTurn"]} has achieved victory!  All hail the Conqueror!`);
 };
 
 // ***********   Fortify helper functions   ***********
 
+// Function to populate territories to fortify from, ie. that our player owns and have more than 1 troop
+// and have a neighboring territory this player owns as well
+function fillFortifyFromTerritoriesSelect() {
+    let terrCanFortify = [];
+    let tempTerritories = JSON.parse(JSON.stringify(territories));
+    // Loop over all territories - if this player is owner and it has army greater than 1,
+    tempTerritories.forEach((terr) => {
+        if (terr.owner === gameObj["playersTurn"] && terr.army > 1) {
+            let tempTerr = terr;
+            // push this into our fortifiable array
+            terrCanFortify.push(tempTerr);
+        }
+    });
+    // Sort array so it's more visually appealing 
+    terrCanFortify.sort();
+
+    let fortifyFromTerritorySelect = document.getElementById("fortify-from-territory");
+    // Clear out any old selectors, just in case
+    clearOptions(fortifyFromTerritorySelect);
+    let blankOption = document.createElement("option");
+     blankOption.text = "--";
+     blankOption.value = "--";
+     fortifyFromTerritorySelect.add(blankOption);
+    // loop over each territory to list option, and put index as value to help with next function
+    terrCanFortify.forEach(function callback(terr) {
+        // create new option
+        let option = document.createElement("option");
+        // add name and value to option
+        option.text = terr.name;
+        option.value = terr.name;
+        // add option to our Select form
+        fortifyFromTerritorySelect.add(option);
+    });
+}
+
+// Function to populate territories to fortify to, once a territory to fortify from is selected
+function fillFortifyToTerritoriesSelect() {
+    // grabbing the value of the territory to attack from when our player selects it
+    let fortifyFrom = document.getElementById("fortify-from-territory").value;
+    // setting empty array to use to create our select options
+    let fortifyTo = [];
+    let tempTerritories = JSON.parse(JSON.stringify(territories));
+    tempTerritories.forEach(function callback(terr, index) {
+        let tempTerr = JSON.parse(JSON.stringify(terr));
+        if (tempTerr.name === fortifyFrom) {
+            // console.log(fortifyFrom, typeof fortifyFrom);
+            // console.log("territories index: ", index, "tempTerr.name", tempTerr.name, "tempTerr.neighbors: ", tempTerr["neighbors"]);
+            fortifyObj["fortifyFromIndex"] = index;
+            for (let i = 0; i < tempTerr["neighbors"].length; i++) {
+                let doubleTempTerr = JSON.parse(JSON.stringify(tempTerr));
+                // console.log("territory index: ", index, "tempTerr.neighbors: ", doubleTempTerr["neighbors"]);
+                fortifyTo.push(doubleTempTerr["neighbors"][i]);
+            }
+        }
+    });
+
+    console.log("fortifyTo", fortifyTo);
+    let fortifyToFinal = [];
+    let player = gameObj["playersTurn"];
+    for (let k = 0; k < playersObj[player].territories.length; k++) {
+        // console.log(k, playersObj[player].territories[k]);
+        for (let j = 0; j < fortifyTo.length; j++) {
+            // console.log(fortifyTo[j]);
+            if (playersObj[player].territories[k] === fortifyTo[j]) {
+                // console.log("test");
+                let tempTerr = fortifyTo[j];
+                fortifyToFinal.push(tempTerr);
+            };
+        };
+    };
+    // console.log("fortifyToFinal", fortifyToFinal);
+
+     // Grab our select id for fortifying to territories dropdown
+     let fortifyToTerritoriesSelect = document.getElementById("fortify-to-territories");
+     clearOptions(fortifyToTerritoriesSelect);
+     let blankOption = document.createElement("option");
+     blankOption.text = "--";
+     blankOption.value = "--";
+     fortifyToTerritoriesSelect.add(blankOption);
+     // loop over this array of territories and for each,
+     fortifyToFinal.forEach(terr => {
+         let tempTerr = terr;
+        //  console.log("tempTerr", tempTerr);
+         let option = document.createElement("option");
+         // add name and value to our option, and 
+         option.text = tempTerr;
+         option.value = tempTerr;
+         // add option to our Select form
+         fortifyToTerritoriesSelect.add(option);
+     });
+    
+     // Using DOM manipulation to create options for how many troops to fortify
+    let fortifyHowManyFormSelect = document.getElementById("fortify-how-many");
+    clearOptions(fortifyHowManyFormSelect);
+    let i = 1;
+    let troops = territories[fortifyObj["fortifyFromIndex"]].army - 1;
+    while (i <= troops) {
+        let option = document.createElement("option");
+        option.text = i;
+        option.value = i;
+        fortifyHowManyFormSelect.add(option);
+        i++;
+    };
+}
+
 // Function to begin Fortifying
 function beginFortify() {
-    console.log("beginFortify function called");
+    
+    // Set new display message about fortifying
+    let displayMessage = document.getElementById("display-message");
+    displayMessage.innerHTML = "Time to fortify - move troops to another territory";
+
+    // Hide the attack form
+    let attackForm = document.getElementById("attack-form");
+    attackForm.style.display = "none";
+
+    // Hide the advance troops form, if it is somehow present
+    let advanceTroopsForm = document.getElementById("advance-form");
+    advanceTroopsForm.style.display = "none";
+
+    // Show the fortify troops form
+    let fortifyTroopsForm = document.getElementById("fortify-form");
+    fortifyTroopsForm.style.display = "flex";
+
+    // Show the end-turn button
+    let endTurnButton = document.getElementById("end-turn-btn");
+    endTurnButton.style.display = "flex";
+
+    fillFortifyFromTerritoriesSelect();
 };

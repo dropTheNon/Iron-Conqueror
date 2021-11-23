@@ -143,7 +143,8 @@
         </div> -->
           <div id="action-box" class="center-content-column">
             <!-- Begin a new game -->
-            <h3><span id="display-message">Begin a new game</span></h3>
+            <h2><span id="round-status">Begin a new game</span></h2>
+            <h3><span id="display-message"></span></h3>
             <button
               onclick="beginNewGame()"
               id="play-btn"
@@ -177,7 +178,7 @@
             <!-- Begin Turn button -->
             <button
               id="begin-turn-btn"
-              class="btn btn-success"
+              class="btn btn-success center-content"
             >
               Begin Turn
             </button>
@@ -233,16 +234,11 @@
               <br />
               <input 
                 id="attack-btn" 
-                class="btn btn-success" 
+                class="btn btn-success center-content" 
                 type="submit" 
-                value="Attack!" />
-                <br />
-              <button 
-                id="end-attacks-btn"
-                class="btn btn-danger"
-              >
-              End Attacks
-              </button>
+                value="Attack!" 
+              />
+              <br />
             </form>
             <!-- Advance Troops form -->
             <form 
@@ -259,11 +255,60 @@
                   <br />
                   <input 
                   id="advance-btn" 
-                  class="btn btn-success" 
+                  class="btn btn-success center-content" 
                   type="submit" 
                   value="Advance" />
               </div>
             </form>
+            <!-- Fortify Troops form -->
+            <form 
+              id="fortify-form" 
+              class="center-content-column"
+              >
+              <div id="fortify-form-box">
+                <label for="fortify-from-territory">Choose a territory to fortify from:</label>
+                <select 
+                  onchange="fillFortifyToTerritoriesSelect()"
+                  id="fortify-from-territory" 
+                  name="fortify-from-territory"
+                  >
+                  <!-- Use DOM Manipulation to create <options> based off player's territories -->
+                </select>
+                <br /><br />
+                <label for="fortify-to-territories"
+                  >Choose a territory to fortify:</label
+                >
+                <select id="fortify-to-territories" name="fortify-to-territories">
+                  <!-- DOM manipulation to populate <options> based off territories -->
+                </select>
+                <br /><br />
+                <label for="fortify-how-many"
+                >How many troops to fortify?</label
+                >
+                  <select id="fortify-how-many" name="fortify-how-many">
+                    <!-- DOM manipulation to populate options based off troops -->
+                  </select>
+                  <br />
+                  <input 
+                  id="fortify-btn" 
+                  class="btn btn-success center-content" 
+                  type="submit" 
+                  value="Fortify" />
+              </div>
+            </form>
+            <br/>
+            <button 
+                id="end-attack-btn"
+                class="btn btn-danger center-content"
+            >
+            End Attacks
+            </button>
+            <button 
+                id="end-turn-btn"
+                class="btn btn-danger center-content"
+            >
+            End Turn
+            </button>
           </div>
         </div>
       </div>

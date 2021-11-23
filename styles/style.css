@@ -17,7 +17,8 @@
 }
 
 .btn {
-    width: 80%;
+    height: 30px;
+    width: 180px;
 }
 
 .btn-success {
@@ -83,6 +84,10 @@
     display: none;
 }
 
+#fortify-form {
+    display: none;
+}
+
 /* ***************  Buttons by ID  *************** */
 #start-game-btn {
     display: none;
@@ -92,7 +97,13 @@
     display: none;
 }
 
-#end-attacks-btn {
+#end-attack-btn {
+    display: none;
+    background-color: red;
+}
+
+#end-turn-btn {
+    display: none;
     background-color: red;
 }
 

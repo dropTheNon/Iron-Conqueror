@@ -1,12 +1,18 @@
 // Object to store new players in as they're created
 const playersObj = {};
+
 // Object to store info about this particular game in
 const gameObj = {
     "status" : "active",
     "numberOfTurns": 1
 };
+
 // Object to store attack information in
 const attackObj = {};
+
+// Object to store fortify info in
+const fortifyObj = {};
+
 // Available colors
 let playerColors = ["Red", "Orange", "Yellow", "Green", "Blue", "Pink"];
 
@@ -38,7 +44,6 @@ class Player {
         // Calling helper functions to create options in select boxes for deploying troops
         availableTerritories();
         availableTroops();
-
         // if this player is out of troops, call beginAttack() function
         if (this.troopsToDeploy === 0) {
 
@@ -70,8 +75,8 @@ class Player {
     attack() {
 
         let att, def;
-
-        territories.forEach(function callback(terr, index) {
+        let tempTerritories = [...territories];
+        tempTerritories.forEach(function callback(terr, index) {
             if (terr.name === attackObj["att"]) {
                 att = terr;
                 attackObj["terrIndexOfAttacker"] = index;
@@ -82,8 +87,8 @@ class Player {
             }
         });
 
-        // passing in our result object from our dice-roll function to get dice for att and def
-        let result = diceRoll(att, def);
+        // Call our dice-roll function to get dice for att and def territories
+        diceRoll();
         
         // Variables for attacker dice, defender dice
         let attDice = attackObj["dice-roll-result"]["attacker-dice"];
@@ -109,10 +114,13 @@ class Player {
                     def.army = 1;
                     // add territory to attacker's territories and remove from defender's
                     playersObj[attacker].territories.push(def.name);
+                    console.log("playersObj[defender].territories", playersObj[defender].territories);
                     playersObj[defender].territories = arrayRemove(playersObj[defender].territories, def.name);
                     // change owner of "def" to attacker, change color
                     def.owner = att.owner;
                     def.color = att.color;
+
+                    mapUpdate();
 
                     // Call method beginAdvanceTroops()
                     return this.beginAdvanceTroops();
@@ -127,6 +135,7 @@ class Player {
                     // Reset defenders dice to 0 to break while loop
                     defDice = [];
                 }
+                mapUpdate();
             }
 
             // Reduce dice to proceed with while loop
@@ -150,9 +159,12 @@ class Player {
         // Change territories' troop numbers based off how many troops player advanced
         territories[attackObj["terrIndexOfDefender"]].army += +(troopsToAdvance);
         territories[attackObj["terrIndexOfAttacker"]].army -= +(troopsToAdvance);
+        // call mapUpdate to refresh map, and beginAttack to reset to attack mode
         mapUpdate();
+        let displayMessage = document.getElementById("display-message");
+        displayMessage.innerHTML = "Attack a territory";
         beginAttack();
-    }
+    };
 
     // Method to begin to advance troops to a conquered territory, where params are territory objects
     // from our territories array
@@ -179,7 +191,17 @@ class Player {
 
     // Method to fortify troops to adjacent territory
     fortify() {
+        territories[fortifyObj["fortifyFromIndex"]].army -= +(fortifyObj["howManyTroops"]); 
+        territories[fortifyObj["fortifyToIndex"]].army += +(fortifyObj["howManyTroops"]);
+        
+        let fortifyTroopsForm = document.getElementById("fortify-form");
+        fortifyTroopsForm.style.display = "none";
 
+        let endTurnButton = document.getElementById("end-turn-btn");
+        endTurnButton.style.display = "none";
+
+        mapUpdate();
+        changeTurn();
     }
 }
 
@@ -187,6 +209,7 @@ class Player {
 
 function beginTurn() {
     // Use our turnIndex and number of players
+    gameObj["round"] = Math.ceil(gameObj["numberOfTurns"] / 2);
     let turnIndex = gameObj["turnIndex"];
     let numberOfPlayers = gameObj["numberOfPlayers"];
     // to find the index of whose turn it is now
@@ -195,13 +218,12 @@ function beginTurn() {
     gameObj["playersTurn"] = gameObj["players"][currentTurnIndex];
     // Display message about which players' turn it is
     let player = playersObj[gameObj["playersTurn"]];
+    let roundStatusMessage = document.getElementById("round-status");
+    roundStatusMessage.innerHTML = `Round ${gameObj["round"]} - ${gameObj["playersTurn"]}'s turn`;
+
+    
     let displayMessage = document.getElementById("display-message");
-    // For first turn, display this:
-    if (gameObj["numberOfTurns"] === 1) {
-        displayMessage.innerHTML = `Game has begun - it is ${player.name}'s turn!`;
-    } else {
-        displayMessage.innerHTML = `It is ${player.name}'s turn`;
-    }
+    displayMessage.innerHTML = "Begin turn";
     // Show "Begin Turn" button
     let startGameButton = document.getElementById("start-game-btn");
     startGameButton.style.display = "none";
@@ -220,6 +242,8 @@ function startGame() {
     // players = array of our players
     gameObj["players"] = players;
     gameObj["numberOfPlayers"] = players.length;
+    gameObj["numberOfTurns"] = 1;
+
     // Randomly assign one player to go first, by finding turnIndex
     let playerTurnIndex = randomizer(players);
     gameObj["turnIndex"] = playerTurnIndex;
@@ -255,6 +279,8 @@ function createPlayer() {
     if (Object.keys(playersObj).length === 2){
         let newPlayerForm = document.getElementById("create-player-form");
         newPlayerForm.style.display = "none";
+        let roundStatusMessage = document.getElementById("round-status");
+        roundStatusMessage.innerHTML = "Start Round 1";
         displayMessage.innerHTML = "Players created! Click 'Start Game' to begin playing!";
         let startGameButton = document.getElementById("start-game-btn");
         startGameButton.style.display = "block";
@@ -267,8 +293,10 @@ function beginNewGame() {
     // add select options to color selector
     availableColors();
     // change the text of display-message
+    let roundStatusMessage = document.getElementById("round-status");
+    roundStatusMessage.innerHTML = "Create Players";
     let displayMessage = document.getElementById("display-message");
-    displayMessage.innerHTML = "Create Player";
+    displayMessage.innerHTML = "Create first player!";
     // hide the Play button, and... 
     let playGameButton = document.getElementById("play-btn");
     playGameButton.style.display = "none";
@@ -282,6 +310,41 @@ function beginNewGame() {
 
 
 // ***********   Event Listeners   ***********
+
+// Event listener for "End Turn" button 
+document.getElementById("end-turn-btn").addEventListener("click", function(event) {
+    event.preventDefault();
+    
+    let fortifyTroopsForm = document.getElementById("fortify-form");
+    fortifyTroopsForm.style.display = "none";
+
+    let endTurnButton = document.getElementById("end-turn-btn");
+    endTurnButton.style.display = "none";
+
+    changeTurn();
+});
+
+// Event listener for "Fortify Troops" button
+document.getElementById("fortify-form").addEventListener("submit", function(event) {
+    // Prevent form submission from refreshing page (and ruining game!)
+    event.preventDefault();
+
+    // Grab how many troops our player is fortifying
+    let troopsToFortify = document.getElementById("fortify-how-many").value;
+    // and where they're fortifying to
+    let terrToFortify = document.getElementById("fortify-to-territories").value;
+
+    territories.forEach(function callback(terr, index) {
+        if (terr.name === terrToFortify) {
+            fortifyObj["fortifyToIndex"] = index;
+        }
+    });
+
+    fortifyObj["howManyTroops"] = troopsToFortify;
+
+    let player = playersObj[gameObj["playersTurn"]];
+    player.fortify();
+});
 
 // Event listener for "Advance Troops" button
 document.getElementById("advance-form").addEventListener("submit", function(event) {
@@ -298,8 +361,9 @@ document.getElementById("advance-form").addEventListener("submit", function(even
 });
 
 // Event listener for "End Attacks" button
-document.getElementById("end-attacks-btn").addEventListener("click", function() {
-
+document.getElementById("end-attack-btn").addEventListener("click", function() {
+    let endAttackButton = document.getElementById("end-attack-btn");
+    endAttackButton.style.display = "none";
     // Call beginFortify() helper function
     beginFortify();
 });

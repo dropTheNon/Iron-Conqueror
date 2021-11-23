@@ -62,7 +62,7 @@ const territories = [
     { "name": "j1", "continent": "Josh's Jail Cells", "owner": "none", "color": "white", "army": 3, "neighbors": ["ry1"]},
     { "name": "j2", "continent": "Josh's Jail Cells", "owner": "none", "color": "white", "army": 3, "neighbors": ["j3", "j4", "j5"]},
     { "name": "j3", "continent": "Josh's Jail Cells", "owner": "none", "color": "white", "army": 3, "neighbors": ["j2", "j4", "j5"]},
-    { "name": "j4", "continent": "Josh's Jail Cells", "owner": "none", "color": "white", "army": 3, "neighbors": ["j2", "j3", "j5", "s3"]},
+    { "name": "j4", "continent": "Josh's Jail Cells", "owner": "none", "color": "white", "army": 3, "neighbors": ["j2", "j3", "j5", "a3"]},
     { "name": "j5", "continent": "Josh's Jail Cells", "owner": "none", "color": "white", "army": 3, "neighbors": ["j2", "j3", "j4", "m1", "ry2"]},
     { "name": "ry1", "continent": "Ryan's Rec Room", "owner": "none", "color": "white", "army": 3, "neighbors": ["j1", "ry2"]},
     { "name": "ry2", "continent": "Ryan's Rec Room", "owner": "none", "color": "white", "army": 3, "neighbors": ["ry1", "j5", "m1", "g2"]},
